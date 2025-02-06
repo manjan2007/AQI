@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time AQI Health Risks</title>
+    
+    <!-- External CSS & JS for Map and Fonts -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background: linear-gradient(to right, #00b4d8, #0077b6); /* Complementary blue tones */
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            font-size: 35px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin: 40px;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .content-left, .content-right {
+            width: 45%;
+            background-color: #ffffff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .content-left {
+            margin-right: 5%;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #00b4d8;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #e0f7fa;
+        }
+        .good {
+            background-color: #b3e6b3;
+            color: #2e8b57;
+        }
+        .moderate {
+            background-color: #ffcc66;
+            color: #e65100;
+        }
+        .unhealthy {
+            background-color: #ff6666;
+            color: #d32f2f;
+        }
+        .severe {
+            background-color: #990000;
+            color: white;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            margin-top: 30px;
+        }
+        footer {
+            background-color: #0077b6;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        footer a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .highlight {
+            color: #f39c12; /* Use a yellow-orange complementary highlight color */
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .content-left, .content-right {
+                width: 100%;
+                margin-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        Real-Time AQI Health Risks & Interactive Map
+    </header>
+
+    <section>
+        <div class="container">
+            <!-- Left Section: Why AQI is important -->
+            <div class="content-left">
+                <h2>Why AQI is Important?</h2>
+                <p><strong>AQI (Air Quality Index)</strong> is crucial to track air pollution levels. It helps us assess the safety of outdoor air for breathing. Poor air quality can lead to serious health problems, especially for sensitive groups.</p>
+                <ul>
+                    <li><span class="highlight">Protects Health:</span> AQI allows you to gauge the pollution levels and avoid harmful exposure.</li>
+                    <li><span class="highlight">Environmental Awareness:</span> Helps raise awareness about environmental pollution.</li>
+                    <li><span class="highlight">Long-Term Effects:</span> Continuous exposure to high AQI can result in chronic health problems.</li>
+                </ul>
+            </div>
+
+            <!-- Right Section: AQI Health Risks Table -->
+            <div class="content-right">
+                <h2>AQI Health Risks Table</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>AQI Range</th>
+                            <th>Air Quality Level</th>
+                            <th>Health Impacts</th>
+                            <th>Precautions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="good">
+                            <td>0 - 50</td>
+                            <td>Good</td>
+                            <td>No health impact.</td>
+                            <td>No precautions needed.</td>
+                        </tr>
+                        <tr class="moderate">
+                            <td>51 - 100</td>
+                            <td>Moderate</td>
+                            <td>Slight risk for some people.</td>
+                            <td>Avoid excessive outdoor activities for sensitive individuals.</td>
+                        </tr>
+                        <tr class="unhealthy">
+                            <td>101 - 150</td>
+                            <td>Unhealthy for Sensitive Groups</td>
+                            <td>Health effects may occur for sensitive groups.</td>
+                            <td>Sensitive groups should limit outdoor activities.</td>
+                        </tr>
+                        <tr class="unhealthy">
+                            <td>151 - 200</td>
+                            <td>Unhealthy</td>
+                            <td>Health effects likely for everyone.</td>
+                            <td>Avoid outdoor activity; sensitive groups stay indoors.</td>
+                        </tr>
+                        <tr class="severe">
+                            <td>201 - 300</td>
+                            <td>Very Unhealthy</td>
+                            <td>Serious health effects for all.</td>
+                            <td>Stay indoors, limit physical activity.</td>
+                        </tr>
+                        <tr class="severe">
+                            <td>301 - 500</td>
+                            <td>Hazardous</td>
+                            <td>Health emergency conditions for the entire population.</td>
+                            <td>Everyone should remain indoors.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <section>
+        <!-- Interactive AQI Map -->
+        <div id="map"></div>
+    </section>
+
+    <footer>
+        <p>Created by <span class="highlight">Rajan Mandal</span> | Instagram: <a href="https://www.instagram.com/rajansmandal/" target="_blank">@rajansmandal</a></p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.8.1/mapbox-gl.js"></script>
+
+    <script>
+        var map = L.map('map').setView([20, 0], 2);
+
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=YOUR_MAPBOX_API_KEY', {
+            attribution: 'Map data &copy; OpenStreetMap contributors, Mapbox',
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1
+        }).addTo(map);
+
+        function addAQIMarker(lat, lon, aqi) {
+            let color = aqi < 51 ? "green" : aqi < 101 ? "yellow" : aqi < 151 ? "orange" : "red";
+            L.circleMarker([lat, lon], {
+                color: color,
+                radius: 10,
+                fillOpacity: 0.7
+            }).addTo(map).bindPopup(`<b>AQI: ${aqi}</b><br>Health risk: ${getHealthRisk(aqi)}`);
+        }
+
+        function getHealthRisk(aqi) {
+            if (aqi <= 50) return "Good";
+            else if (aqi <= 100) return "Moderate";
+            else if (aqi <= 150) return "Unhealthy for Sensitive Groups";
+            else if (aqi <= 200) return "Unhealthy";
+            else if (aqi <= 300) return "Very Unhealthy";
+            else return "Hazardous";
+        }
+
+        // Example markers for different locations
+        addAQIMarker(28.7041, 77.1025, 95); // New Delhi, India
+        addAQIMarker(34.0522, -118.2437, 120); // Los Angeles, USA
+        addAQIMarker(51.5074, -0.1278, 45); // London, UK
+    </script>
+</body>
+</html>
